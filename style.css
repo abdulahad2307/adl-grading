@@ -1,0 +1,433 @@
+/* Engineering computation pad: pale green paper, faint grid, green printed
+   rules, blue ballpoint for passes and a red pen for fails. */
+
+:root {
+  --pad: #eef2e4;
+  --grid: #dde5cf;
+  --sheet: #fafcf5;
+  --line: #c6d1b3;
+  --green: #5f7f4a;
+  --ink: #22303f;
+  --muted: #5b6858;
+  --pass: #1f56a0;
+  --fail: #b5302a;
+  --miss: #8a7a3a;
+  --focus: #1f56a0;
+  color-scheme: light;
+  font-size: 15.5px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pad: #161b15;
+    --grid: #1c2319;
+    --sheet: #1d241b;
+    --line: #34412f;
+    --green: #8fae77;
+    --ink: #e2e8dc;
+    --muted: #9ba795;
+    --pass: #86b3ef;
+    --fail: #ef8a80;
+    --miss: #d2c07a;
+    --focus: #86b3ef;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background-color: var(--pad);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 5mm 5mm;
+  font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+#app {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 18px 20px 60px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+h1, h2 { font-weight: 700; margin: 0; }
+h2 { font-size: 1.2rem; }
+p { margin: 0 0 .6em; }
+
+.quiet { color: var(--muted); }
+.sr {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+.demo {
+  margin: 0 0 12px;
+  padding: 6px 10px;
+  border-left: 3px solid var(--miss);
+  background: var(--sheet);
+  color: var(--muted);
+  font-size: .92rem;
+}
+
+/* ---------- pad header: the boxed fields at the top of the sheet ---------- */
+
+.pad-head {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr 1.4fr 1fr 1.4fr;
+  border: 2px solid var(--green);
+  background: var(--sheet);
+}
+
+.field {
+  padding: 5px 10px 7px;
+  border-left: 1px solid var(--green);
+  min-width: 0;
+}
+.field:first-child { border-left: 0; }
+
+.field .k {
+  display: block;
+  font-size: .74rem;
+  color: var(--green);
+}
+.field .v {
+  display: block;
+  font-size: 1.02rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.field h1.v { font-size: 1.25rem; }
+
+.status { font-weight: 400 !important; color: var(--muted); }
+.status.busy { color: var(--pass); }
+.status.warn { color: var(--fail); }
+
+/* ---------- navigation ---------- */
+
+.sessions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 22px;
+  margin: 14px 2px 0;
+}
+.sessions a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 3px 0;
+  border-bottom: 2px solid transparent;
+}
+.sessions a:hover { color: var(--ink); }
+.sessions a[aria-current="page"] {
+  color: var(--ink);
+  font-weight: 700;
+  border-bottom-color: var(--ink);
+}
+
+/* exercise tabs look like the dividers in a ring binder */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 14px 0 0;
+  padding-left: 8px;
+  border-bottom: 2px solid var(--green);
+}
+.tab {
+  padding: 5px 14px 4px;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  background: var(--pad);
+  color: var(--muted);
+  text-decoration: none;
+  position: relative;
+  top: 2px;
+}
+.tab:hover { color: var(--ink); }
+.tab[aria-current="page"] {
+  background: var(--sheet);
+  color: var(--ink);
+  font-weight: 700;
+  border-color: var(--green);
+  border-width: 2px 2px 0;
+  padding-top: 4px;
+}
+.tab.off { opacity: .5; cursor: not-allowed; }
+
+main {
+  background: var(--sheet);
+  border: 2px solid var(--green);
+  border-top: 0;
+  padding: 14px 16px 18px;
+  min-height: 240px;
+}
+
+/* ---------- buttons and fields ---------- */
+
+.btn {
+  font: inherit;
+  font-size: .93rem;
+  color: var(--ink);
+  background: var(--sheet);
+  border: 1px solid var(--muted);
+  border-radius: 3px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.btn:hover { background: var(--pad); }
+.btn.primary {
+  background: var(--ink);
+  color: var(--sheet);
+  border-color: var(--ink);
+}
+.btn.primary:hover { opacity: .9; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.link {
+  font: inherit;
+  font-size: .88rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+input[type="text"], input[type="search"], input[type="password"], textarea {
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 4px 7px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.toolbar .find { flex: 1 1 240px; max-width: 340px; }
+.toolbar p { margin: 0 auto 0 0; }
+
+/* ---------- the grading table ---------- */
+
+.scroll { overflow-x: auto; }
+
+table.sheet {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.sheet thead th {
+  text-align: left;
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--green);
+  padding: 4px 8px 6px;
+  border-bottom: 2px solid var(--green);
+}
+
+.sheet td, .sheet tbody th {
+  padding: 3px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+  height: 36px;
+}
+
+.sheet tr.g-start > * { border-top: 2px solid var(--green); }
+.sheet tbody tr:first-child > * { border-top: 0; }
+
+/* the group number sits in a margin column, like a hand-written number */
+.sheet .gnum {
+  width: 64px;
+  text-align: center;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--green);
+  border-right: 1px solid var(--line);
+  vertical-align: top;
+  padding-top: 6px;
+}
+.sheet thead .gnum { font-size: .8rem; vertical-align: bottom; }
+
+.sheet .name { min-width: 170px; }
+.sheet .idm { color: var(--muted); letter-spacing: .02em; width: 110px; }
+.sheet .miss { width: 72px; text-align: center; }
+.sheet .pf { width: 130px; }
+.sheet .comment input { width: 100%; min-width: 200px; border-color: transparent; border-bottom-color: var(--line); }
+.sheet .comment input:hover, .sheet .comment input:focus { border-color: var(--line); }
+
+.sheet input[type="checkbox"] {
+  width: 18px; height: 18px;
+  accent-color: var(--miss);
+  cursor: pointer;
+}
+
+tr.is-missing .name, tr.is-missing .idm {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--miss);
+}
+
+/* Pass and Fail: unmarked they are faint, marked they are circled in ink */
+.marks { display: inline-flex; gap: 4px; }
+.mark {
+  font: inherit;
+  font-size: .9rem;
+  padding: 2px 9px;
+  border: 1px dashed var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.mark:hover { border-style: solid; color: var(--ink); }
+.mark.pass[aria-pressed="true"] {
+  color: var(--pass);
+  border: 2px solid var(--pass);
+  font-weight: 700;
+  padding: 1px 8px;
+}
+.mark.fail[aria-pressed="true"] {
+  color: var(--fail);
+  border: 2px solid var(--fail);
+  font-weight: 700;
+  padding: 1px 8px;
+}
+
+.tally {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: .92rem;
+}
+
+/* overview */
+.overview .ov { text-align: center; width: 88px; }
+.cell-pass { color: var(--pass); font-weight: 700; }
+.cell-fail { color: var(--fail); font-weight: 700; }
+.cell-miss { color: var(--miss); font-style: italic; }
+.cell-empty { color: var(--line); }
+.overview .total { font-weight: 700; border-left: 1px solid var(--line); }
+
+/* ---------- student list ---------- */
+
+.list-intro { max-width: 68ch; margin-bottom: 14px; }
+.list-intro h2 { margin-bottom: 6px; }
+
+.list-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.paste {
+  width: 100%;
+  min-height: 300px;
+  resize: vertical;
+  tab-size: 14;
+  line-height: 1.6;
+  background: var(--sheet);
+  background-image: linear-gradient(transparent calc(1.6em - 1px), var(--line) 1px);
+  background-size: 100% 1.6em;
+  background-attachment: local;
+  padding: 0 8px;
+  border-color: var(--muted);
+}
+
+.actions { display: flex; gap: 8px; margin-top: 10px; }
+
+.preview .summary { font-weight: 700; }
+.preview ul { margin: 0 0 10px; padding-left: 18px; font-size: .93rem; }
+.errors { color: var(--fail); }
+.warnings { color: var(--miss); }
+p.warnings { font-size: .93rem; }
+
+.groups { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.groups li {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: .95rem;
+}
+.groups .gl { color: var(--green); font-weight: 700; }
+
+/* ---------- passphrase screen and problems ---------- */
+
+.gate {
+  max-width: 360px;
+  margin: 12vh auto 0;
+  padding: 22px 22px 18px;
+  background: var(--sheet);
+  border: 2px solid var(--green);
+  display: grid;
+  gap: 8px;
+}
+.gate h1 { font-size: 1.3rem; margin-bottom: 6px; }
+.gate label { font-size: .85rem; color: var(--green); }
+.problem-text { color: var(--fail); min-height: 1.4em; margin: 0; font-size: .93rem; }
+.problem { color: var(--ink); }
+
+.foot { margin-top: 12px; text-align: right; }
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translate(-50%, 140%);
+  max-width: min(560px, calc(100% - 24px));
+  padding: 9px 14px;
+  background: var(--ink);
+  color: var(--sheet);
+  border-radius: 3px;
+  font-size: .93rem;
+  transition: transform .2s ease-out;
+}
+#toast.show { transform: translate(-50%, 0); }
+
+/* ---------- small screens ---------- */
+
+@media (max-width: 760px) {
+  #app { padding: 10px 10px 40px; }
+  .pad-head { grid-template-columns: 1fr 1fr; }
+  .field { border-left: 0; border-top: 1px solid var(--green); }
+  .field.wide { grid-column: 1 / -1; border-top: 0; }
+  .field:nth-child(odd):not(.wide) { border-left: 1px solid var(--green); }
+  .field:nth-child(2) { border-left: 0; }
+  .list-cols { grid-template-columns: 1fr; }
+  main { padding: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #toast { transition: none; }
+}
+
+/* ---------- printing: just the header box and the table ---------- */
+
+@media print {
+  body { background: #fff; color: #000; }
+  .sessions, .tabs, .toolbar, .foot, .demo, #toast, .status-field { display: none !important; }
+  main { border: 0; padding: 0; }
+  .pad-head { margin-bottom: 10px; grid-template-columns: 2fr 1fr 1.4fr 1fr; }
+  .mark[aria-pressed="false"] { visibility: hidden; }
+  .comment input { border: 0 !important; }
+  table.sheet { min-width: 0; }
+}
