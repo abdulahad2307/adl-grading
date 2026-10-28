@@ -52,6 +52,13 @@
     if (gm) {
       group = parseInt(gm[1], 10);
       cells = cells.slice(1);
+    } else if (!split.words) {
+      // "1 Anna Berger, ab12cdef": group number written in front of the name
+      const lead = cells[0].match(/^(\d{1,3})[.)]?\s+(\S.*)$/);
+      if (lead) {
+        group = parseInt(lead[1], 10);
+        cells[0] = lead[2];
+      }
     }
 
     // Long pure numbers are matriculation numbers; they are not part of the name.
@@ -85,12 +92,20 @@
       }
     }
 
+    // Nothing looked like an idm, but the line is split into columns:
+    // take the last single-word column and let the preview warn about it.
+    let unusual = false;
+    if (!idm && !split.words && cells.length >= 2 && !/\s/.test(cells[cells.length - 1]) && !HEADER_WORDS.test(line)) {
+      idm = cleanIdm(cells.pop());
+      unusual = true;
+    }
+
     cells = cells.filter(c => c !== '');
     const name = split.words ? cells.join(' ') : cells.join(split.tabbed ? ' ' : ', ');
 
     if (!idm && group === null && HEADER_WORDS.test(line)) return { header: true };
     if (!idm && !name) return null;
-    return { group, continues, name: name.replace(/\s+/g, ' ').trim(), idm };
+    return { group, continues, name: name.replace(/\s+/g, ' ').trim(), idm, unusual };
   }
 
   function chunkSizes(n) {
@@ -152,7 +167,8 @@
       }
       blankBefore = false;
 
-      if (!p.idm) errors.push(`Line ${idx + 1} (“${line.trim()}”) has no idm I could recognise.`);
+      if (!p.idm) errors.push(`Line ${idx + 1} (“${line.trim()}”) has no idm. Put it after the name, separated by a comma or tab.`);
+      else if (p.unusual) warnings.push(`Line ${idx + 1}: “${p.idm}” doesn’t look like an FAU idm (like ab12cdef). Check it before saving.`);
       cur.members.push({ name: p.name, idm: p.idm, line: idx + 1 });
     });
 
